@@ -1,42 +1,37 @@
-<script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import CarteEvenement from '@/components/CarteEvenement.vue'
-
-const evenements = ref([])
-const loading = ref(true)
-const error = ref(null)
-
-onMounted(async () => {
-  try {
-    const { data } = await axios.get('http://localhost:8000/api/evenements')
-    evenements.value = data.member || [] 
-  } catch (err) {
-    console.error('Erreur API :', err)
-    error.value = "Impossible de charger les événements. Veuillez réessayer plus tard."
-  } finally {
-    loading.value = false
-  }
-})
-</script>
-
+<!-- views/TousEvenements.vue -->
 <template>
-  <div>
-    <h2>Liste des événements</h2>
-
-    <p v-if="error" style="color: red;">{{ error }}</p>
-
-    <!-- Affichage pendant le chargement -->
-    <p v-else-if="loading">Chargement...</p>
-
-    <!-- Affichage des événements -->
+  <section class="bloc-evenements">
+    <h2>TOUS LES ÉVÉNEMENTS</h2>
     <CarteEvenement
       v-for="event in evenements"
       :key="event.id"
       :evenement="event"
     />
-
-    <!-- Aucun événement trouvé après chargement -->
-    <p v-if="!loading && evenements.length === 0 && !error">Aucun événement trouvé.</p>
-  </div>
+    <p v-if="evenements.length === 0">Aucun événement trouvé.</p>
+  </section>
+  <section>
+      <ImageUploadForm />
+  </section>
 </template>
+
+<script setup>
+import { onMounted } from 'vue'
+import { useEvenementStore } from '../store/evenement'
+import { storeToRefs } from 'pinia'
+import CarteEvenement from '../components/CarteEvenement.vue'
+import ImageUploadForm from '@/components/ImageUploadForm.vue'
+
+
+const store = useEvenementStore()
+const { evenements } = storeToRefs(store)
+
+onMounted(() => {
+  store.chargerEvenements() // récupère tous les événements
+})
+</script>
+
+<style scoped>
+.bloc-evenements {
+  padding: 2rem;
+}
+</style>
