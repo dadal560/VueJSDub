@@ -1,85 +1,142 @@
 <template>
-  <article class="carte-evenement">
-    <div class="images">
-      <img v-for="(img, index) in images" :key="index" :src="img" alt="Affiche événement" />
-    </div>
-    <aside>
-      <h3>{{ evenement.titre }}</h3>
-      <p>{{ evenement.description }}</p>
-      <time>{{ formaterDate(evenement.dateEvenement) }}</time>
-    </aside>
-  </article>
+  <section class="bloc-evenements">
+    <h2 class="bloc-evenements__titre">TOUS LES ÉVÈNEMENTS</h2>
+
+    <p v-if="store.ChargementEvenements" class="bloc-evenements__loader" aria-live="polite" aria-busy="true">
+      Chargement des événements...
+    </p>
+
+    <p v-else-if="store.evenements.length === 0" class="bloc-evenements__vide">
+      Aucun événement trouvé.
+    </p>
+
+    <template v-else>
+      <article
+        v-for="evenement in store.evenements"
+        :key="evenement['@id']"
+        class="bloc-evenements__item"
+      >
+        <h3>{{ evenement.titre }}</h3>
+        <img
+          v-if="eventImages[evenement['@id']]"
+          :src="eventImages[evenement['@id']]"
+          :alt="`Affiche de l'événement : ${evenement.titre}`"
+          class="bloc-evenements__image"
+        />
+        <p class="bloc-evenements__description">{{ evenement.description }}</p>
+        <time class="bloc-evenements__date">{{ formaterDate(evenement.dateEvenement) }}</time>
+      </article>
+    </template>
+  </section>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { ref, onMounted, watch } from 'vue'
+import { useEvenementStore } from '@/stores/evenement'
 
-// Définir les props pour recevoir les données de l'événement
-const props = defineProps({ evenement: Object })
+const store = useEvenementStore()
+const eventImages = ref({})
 
-// Liste des images associées à l'événement
-const images = ref([])
-
-// Charger les images associées à l'événement lors du montage du composant
-onMounted(() => {
-  axios
-    .get(`http://127.0.0.1:8000/api/images?evenement=${props.evenement['@id']}`)
-    .then((res) => {
-      console.log('Images reçues :', res.data)
-      images.value = res.data.member.map((img) => `http://127.0.0.1:8000/images/dub/${img.fichier}`)
+function chargerImage(evenementId) {
+  if (!evenementId) return
+  store.ImagesEvenement(evenementId)
+    .then((images) => {
+      eventImages.value[evenementId] = images.length > 0 ? images[0] : null
     })
-    .catch((err) => {
-      console.error('Erreur API :', err)
+    .catch((error) => {
+      console.error("Erreur lors du chargement de l'image:", error)
+      eventImages.value[evenementId] = null
     })
-})
+}
 
-// Fonction pour formater la date de l'événement
-function formaterDate(date) {
-  return new Date(date).toLocaleDateString('fr-FR', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
+function formaterDate(dateEvenement) {
+  const date = new Date(dateEvenement)
+  return date.toLocaleDateString('fr-FR', {
     day: 'numeric',
+    month: 'long',
+    year: 'numeric'
   })
 }
+
+onMounted(() => {
+  store.Evenements && store.Evenements()
+})
+
+watch(
+  () => store.evenements,
+  (nouveauxEvenements) => {
+    if (nouveauxEvenements && nouveauxEvenements.length > 0) {
+      nouveauxEvenements.forEach((evenement) => {
+        if (evenement['@id']) {
+          chargerImage(evenement['@id'])
+        }
+      })
+    } else {
+      eventImages.value = {}
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>
-.images {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
+.bloc-evenements {
+  padding: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
 }
-.images img {
+
+.bloc-evenements__titre {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: #222;
+}
+
+.bloc-evenements__loader {
+  font-size: 1.1rem;
+  color: #007acc;
+  animation: pulse 1.5s infinite ease-in-out;
+  font-weight: 600;
+}
+
+.bloc-evenements__vide {
+  font-style: italic;
+  color: #666;
+}
+
+.bloc-evenements__item {
+  margin: 0.3rem 0;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.bloc-evenements__image {
   max-width: 200px;
   height: auto;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 1rem;
 }
-.carte-evenement {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background-color: #f9f9f9;
-}
-.carte-evenement aside {
-  flex: 1;
-}
-.carte-evenement h3 {
-  margin: 0 0 0.5rem;
-  font-size: 1.5rem;
-  color: #333;
-}
-.carte-evenement p {
-  margin: 0 0 1rem;
+
+.bloc-evenements__description {
+  margin: 0.5rem 0;
   color: #666;
 }
-.carte-evenement time {
+
+.bloc-evenements__date {
   font-size: 0.9rem;
   color: #999;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 5px #007acc66;
+  }
+  50% {
+    opacity: 0.6;
+    text-shadow: 0 0 15px #007acccc;
+  }
 }
 </style>
