@@ -11,103 +11,122 @@
     </p>
 
     <template v-else>
-      <article v-for="artiste in store.artistes" :key="artiste.id" class="bloc-artistes__item">
-        <h3>{{ artiste.nom }}</h3>
-        <img :src="image" :alt="`Photo de ${artiste.nom}`" class="bloc-artistes__image" />
+      <article
+        v-for="artiste in store.artistes"
+        :key="artiste.id"
+        class="bloc-artistes__item"
+      >
+        <h3 class="bloc-artistes__nom">{{ artiste.nom }}</h3>
+        <img
+          :src="store.imagesParArtiste[artiste.id]"
+          :alt="`Photo de ${artiste.nom}`"
+          class="bloc-artistes__image"
+        />
         <p class="bloc-artistes__bio">{{ artiste.biographie }}</p>
       </article>
     </template>
   </section>
 </template>
 
-
 <script setup>
-import { watch,ref,onMounted} from 'vue'
+import {onMounted } from 'vue'
 import { useArtisteStore } from '@/stores/artiste'
 
 const store = useArtisteStore()
-const image = ref(null)
 
 onMounted(() => {
-  store.Artistes()
+  initialiserArtistesEtImages()
 })
 
-function chargerImage(artisteId) {
-  if (!artisteId) {
-    image.value = null
-    return
-  }
-  store.ImagesArtiste(artisteId)
-    .then((images) => {
-      image.value = images.length > 0 ? images[0] : null
-    })
-    .catch((error) => {
-      console.error('Erreur lors du chargement de l\'image:', error)
-      image.value = null
-    })
+
+async function initialiserArtistesEtImages() {
+  await store.Artistes()
+  store.chargerImagesPourTousLesArtistes(store.artistes)
 }
-
-watch(() => store.artistes, (nouveauxArtistes) => {
-  if (nouveauxArtistes && nouveauxArtistes.length > 0) {
-    chargerImage(nouveauxArtistes[0].id)
-  } else {
-    image.value = null
-  }
-})
 </script>
 
 <style scoped>
 .bloc-artistes {
-  padding: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  padding: 2rem;
+  background-color: #111;
+  color: #eee;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
 }
 
 .bloc-artistes__titre {
-  font-size: 1.8rem;
+  grid-column: 1 / -1;
+  font-size: 2rem;
+  color: #ffd700;
+  text-align: center;
   margin-bottom: 1rem;
-  color: #222;
+  text-shadow: 0 0 10px #ffd70055;
 }
 
-/* Loader animé avec une pulsation douce */
 .bloc-artistes__loader {
+  grid-column: 1 / -1;
   font-size: 1.1rem;
-  color: #007acc;
+  color: #00ffff;
   animation: pulse 1.5s infinite ease-in-out;
   font-weight: 600;
+  text-align: center;
 }
 
-/* Message vide */
 .bloc-artistes__vide {
+  grid-column: 1 / -1;
   font-style: italic;
-  color: #666;
+  color: #888;
+  text-align: center;
 }
 
-/* Style pour chaque artiste */
 .bloc-artistes__item {
-  margin: 0.3rem 0;
-  padding-left: 0.5rem;
-  font-weight: 500;
+  background-color: #1c1c1e;
+  padding: 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
+.bloc-artistes__item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.3);
+}
+
+.bloc-artistes__nom {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
 .bloc-artistes__image {
   max-width: 200px;
   height: auto;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-top: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(255, 255, 255, 0.1);
+  margin-bottom: 1rem;
 }
 
-/* Animation pulse simple */
+.bloc-artistes__bio {
+  font-size: 0.9rem;
+  color: #ccc;
+  line-height: 1.4;
+}
+
+/* Animation */
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
-    text-shadow: 0 0 5px #007acc66;
+    text-shadow: 0 0 5px #00ffff66;
   }
   50% {
     opacity: 0.6;
-    text-shadow: 0 0 15px #007acccc;
+    text-shadow: 0 0 15px #00ffffaa;
   }
 }
 </style>
-
-

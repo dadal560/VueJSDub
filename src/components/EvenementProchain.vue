@@ -11,7 +11,7 @@
     />
 
     <p class="evenement__description">{{ evenement.description }}</p>
-    <p class="evenement__date">📅 {{ formatDate(evenement.dateEvenement) }}</p>
+    <p class="evenement__date">{{ formatDate(evenement.dateEvenement) }}</p>
 
     <section v-if="evenement.artistes?.length" class="evenement__artistes">
       <h4 class="evenement__sous-titre">Artistes :</h4>

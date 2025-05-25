@@ -41,12 +41,28 @@ async function ImagesArtiste(artisteId) {
     const imagesUrls = res.data.member.map(
       (img) => `http://127.0.0.1:8000/images/dub/${img.fichier}`
     )
-    imagesParArtiste.value[artisteId] = imagesUrls
-    return imagesUrls
+    // stocke juste la première image (URL string) ou null
+    const firstImage = imagesUrls.length > 0 ? imagesUrls[0] : null
+    imagesParArtiste.value[artisteId] = firstImage
+    return firstImage
   } catch (error) {
     console.error('Erreur ImagesArtiste:', error)
+    imagesParArtiste.value[artisteId] = null
     throw error
   }
 }
-  return { artistes, artisteSelectionne, Artistes, Artiste, ChargementArtistes , ImagesArtiste }
+
+async function chargerImagesPourTousLesArtistes(artistesListe) {
+  await Promise.all(
+    artistesListe.map(async (artiste) => {
+      try {
+        await ImagesArtiste(artiste.id)
+      } catch {
+        imagesParArtiste.value[artiste.id] = null
+      }
+    })
+  )
+}
+
+  return { artistes, artisteSelectionne, Artistes, Artiste, ChargementArtistes , ImagesArtiste ,chargerImagesPourTousLesArtistes , imagesParArtiste  }
 })
