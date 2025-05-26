@@ -28,15 +28,27 @@
           class="bloc-evenements__image"
         />
         <p class="bloc-evenements__description">{{ evenement.description }}</p>
-        <time class="bloc-evenements__date">{{ formaterDate(evenement.dateEvenement) }}</time>
-        <p>Lieu : {{  }} - {{ lieux[evenement.lieuId].adresse }}</p>
+        <time class="bloc-evenements__date">
+          {{ formaterDate(evenement.dateEvenement) }}
+        </time>
+        <!-- Extraction de l'ID depuis evenement.lieu pour accéder au lieu stocké -->
+        <p>
+          Lieu :
+          <span v-if="store.lieuxParEvenement[evenement.lieu.split('/').pop()]">
+            {{ store.lieuxParEvenement[evenement.lieu.split('/').pop()].nom }} -
+            {{ store.lieuxParEvenement[evenement.lieu.split('/').pop()].adresse }}
+          </span>
+          <span v-else>
+            Non défini
+          </span>
+        </p>
       </article>
     </template>
   </section>
 </template>
 
 <script setup>
-import {onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useEvenementStore } from '@/stores/evenement'
 
 const store = useEvenementStore()
@@ -48,8 +60,14 @@ onMounted(() => {
 async function initialiserEvenementEtImages() {
   await store.RecupererEvenements()
   store.chargerImagesPourTousLesEvenements(store.evenements)
-  store.RecupererLieu(store.evenement.lieu)
 
+  if (store.evenements && store.evenements.length > 0) {
+    await Promise.all(
+      store.evenements.map((evenement) =>
+        store.RecupererLieu(evenement.lieu)
+      )
+    )
+  }
 }
 
 function formaterDate(dateEvenement) {
@@ -60,7 +78,6 @@ function formaterDate(dateEvenement) {
     year: 'numeric',
   })
 }
-
 </script>
 
 <style scoped>
@@ -142,7 +159,6 @@ function formaterDate(dateEvenement) {
   color: #777;
 }
 
-/* Animation */
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
