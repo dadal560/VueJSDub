@@ -2,20 +2,19 @@
   <section class="bloc-artistes">
     <h2 class="bloc-artistes__titre">TOUS LES ARTISTES</h2>
 
-    <p v-if="store.ChargementArtistes" class="bloc-artistes__loader" aria-live="polite" aria-busy="true">
+    <p
+      v-if="store.ChargementArtistes"
+      class="bloc-artistes__loader"
+      aria-live="polite"
+      aria-busy="true"
+    >
       Chargement des artistes...
     </p>
 
-    <p v-else-if="store.artistes.length === 0" class="bloc-artistes__vide">
-      Aucun artiste trouvé.
-    </p>
+    <p v-else-if="store.artistes.length === 0" class="bloc-artistes__vide">Aucun artiste trouvé.</p>
 
     <template v-else>
-      <article
-        v-for="artiste in store.artistes"
-        :key="artiste.id"
-        class="bloc-artistes__item"
-      >
+      <article v-for="artiste in store.artistes" :key="artiste.id" class="bloc-artistes__item">
         <h3 class="bloc-artistes__nom">{{ artiste.nom }}</h3>
         <img
           :src="store.imagesParArtiste[artiste.id]"
@@ -26,11 +25,15 @@
       </article>
     </template>
   </section>
+  <section>
+    <UploaderArtiste />
+  </section>
 </template>
 
 <script setup>
-import {onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useArtisteStore } from '@/stores/artiste'
+import UploaderArtiste from '@/components/UploaderArtiste.vue'
 
 const store = useArtisteStore()
 
@@ -38,9 +41,8 @@ onMounted(() => {
   initialiserArtistesEtImages()
 })
 
-
 async function initialiserArtistesEtImages() {
-  await store.Artistes()
+  await store.RecupererArtistes()
   store.chargerImagesPourTousLesArtistes(store.artistes)
 }
 </script>
@@ -86,7 +88,9 @@ async function initialiserArtistesEtImages() {
   padding: 1rem;
   border-radius: 1rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -120,7 +124,8 @@ async function initialiserArtistesEtImages() {
 
 /* Animation */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     text-shadow: 0 0 5px #00ffff66;
   }

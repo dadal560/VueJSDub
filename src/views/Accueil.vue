@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useEvenementStore } from '../stores/evenement'
 import EvenementProchain from '../components/EvenementProchain.vue'
 
@@ -30,11 +30,15 @@ onMounted(async () => {
   await store.RecupererEvenements()
 })
 
-const evenementProchain = store.evenementProchain
+const evenementProchain = computed(() => {
+  const maintenant = new Date()
+  return store.evenements
+    .filter((e) => new Date(e.dateEvenement) > maintenant)
+    .sort((a, b) => new Date(a.dateEvenement) - new Date(b.dateEvenement))[0]
+})
 </script>
 
 <style scoped>
-/* Ton CSS reste inchangé */
 .banniere {
   position: relative;
   width: 100%;
@@ -46,6 +50,7 @@ const evenementProchain = store.evenementProchain
   height: 100%;
   object-fit: cover;
 }
+
 .banniere__legende {
   position: absolute;
   top: 2rem;

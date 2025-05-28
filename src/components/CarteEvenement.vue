@@ -22,34 +22,46 @@
         class="bloc-evenements__item"
       >
         <h3 class="bloc-evenements__nom">{{ evenement.titre }}</h3>
+
         <img
           :src="store.imagesParEvenement[evenement.id]"
           :alt="`Affiche de l'événement : ${evenement.titre}`"
           class="bloc-evenements__image"
         />
+
         <p class="bloc-evenements__description">{{ evenement.description }}</p>
+
         <time class="bloc-evenements__date">
           {{ formaterDate(evenement.dateEvenement) }}
         </time>
-        <!-- Extraction de l'ID depuis evenement.lieu pour accéder au lieu stocké -->
+
         <p>
           Lieu :
-          <span v-if="store.lieuxParEvenement[evenement.lieu.split('/').pop()]">
-            {{ store.lieuxParEvenement[evenement.lieu.split('/').pop()].nom }} -
-            {{ store.lieuxParEvenement[evenement.lieu.split('/').pop()].adresse }}
+          <span v-if="evenement.lieu && store.lieuxParEvenement[extraireId(evenement.lieu)]">
+            {{ store.lieuxParEvenement[extraireId(evenement.lieu)].nom }} -
+            {{ store.lieuxParEvenement[extraireId(evenement.lieu)].adresse }}
           </span>
-          <span v-else>
-            Non défini
-          </span>
+          <span v-else>Non défini</span>
         </p>
+        <router-link
+          :to="`/evenement/${evenement.id}/artistes`"
+          class="bloc-evenements__lien-artistes"
+        >
+          Voir les artistes associés
+        </router-link>
       </article>
     </template>
+  </section>
+
+  <section>
+    <UploaderEvenement />
   </section>
 </template>
 
 <script setup>
 import { onMounted } from 'vue'
 import { useEvenementStore } from '@/stores/evenement'
+import UploaderEvenement from './UploaderEvenement.vue'
 
 const store = useEvenementStore()
 
@@ -61,11 +73,9 @@ async function initialiserEvenementEtImages() {
   await store.RecupererEvenements()
   store.chargerImagesPourTousLesEvenements(store.evenements)
 
-  if (store.evenements && store.evenements.length > 0) {
+  if (store.evenements?.length > 0) {
     await Promise.all(
-      store.evenements.map((evenement) =>
-        store.RecupererLieu(evenement.lieu)
-      )
+      store.evenements.filter((e) => e.lieu).map((e) => store.RecupererLieu(e.lieu)),
     )
   }
 }
@@ -78,12 +88,16 @@ function formaterDate(dateEvenement) {
     year: 'numeric',
   })
 }
+
+function extraireId(iri) {
+  return iri.split('/').pop()
+}
 </script>
 
 <style scoped>
 .bloc-evenements {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 1.5rem;
   padding: 2rem;
   background-color: #fefefe;
@@ -121,7 +135,9 @@ function formaterDate(dateEvenement) {
   padding: 1rem;
   border-radius: 1rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -133,14 +149,14 @@ function formaterDate(dateEvenement) {
 }
 
 .bloc-evenements__nom {
-  font-size: 1.2rem;
+  font-size: 1.7rem;
   font-weight: bold;
   color: #222;
   margin-bottom: 0.5rem;
 }
 
 .bloc-evenements__image {
-  max-width: 200px;
+  max-width: 300px;
   height: auto;
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
@@ -148,19 +164,20 @@ function formaterDate(dateEvenement) {
 }
 
 .bloc-evenements__description {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: #555;
   line-height: 1.4;
   margin-bottom: 0.5rem;
 }
 
 .bloc-evenements__date {
-  font-size: 0.9rem;
-  color: #777;
+  font-size: 1rem;
+  font-weight: bold;
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     text-shadow: 0 0 5px #007acc66;
   }

@@ -8,8 +8,7 @@ export const useArtisteStore = defineStore('artiste', () => {
   const ChargementArtistes = ref(false)
   const imagesParArtiste = ref({})
 
-
-  async function Artistes() {
+  async function RecupererArtistes() {
     ChargementArtistes.value = true
     try {
       const { data } = await api().get('artistes')
@@ -26,43 +25,51 @@ export const useArtisteStore = defineStore('artiste', () => {
     artisteSelectionne.value = data
   }
 
-async function ImagesArtiste(artisteId) {
-  if (imagesParArtiste.value[artisteId]) {
-    return imagesParArtiste.value[artisteId]
-  }
-  try {
-    const res = await api().get(`/images`, {
-      params: {
-        artiste: `/api/artistes/${artisteId}`,
-        'exists[artiste]': true
-      }
-    })
+  async function ImagesArtiste(artisteId) {
+    if (imagesParArtiste.value[artisteId]) {
+      return imagesParArtiste.value[artisteId]
+    }
+    try {
+      const res = await api().get(`/images`, {
+        params: {
+          artiste: `/api/artistes/${artisteId}`,
+          'exists[artiste]': true,
+        },
+      })
 
-    const imagesUrls = res.data.member.map(
-      (img) => `http://127.0.0.1:8000/images/dub/${img.fichier}`
+      const imagesUrls = res.data.member.map(
+        (img) => `http://127.0.0.1:8000/images/dub/${img.fichier}`,
+      )
+      const firstImage = imagesUrls.length > 0 ? imagesUrls[0] : null
+      imagesParArtiste.value[artisteId] = firstImage
+      return firstImage
+    } catch (error) {
+      console.error('Erreur ImagesArtiste:', error)
+      imagesParArtiste.value[artisteId] = null
+      throw error
+    }
+  }
+
+  async function chargerImagesPourTousLesArtistes(artistesListe) {
+    await Promise.all(
+      artistesListe.map(async (artiste) => {
+        try {
+          await ImagesArtiste(artiste.id)
+        } catch {
+          imagesParArtiste.value[artiste.id] = null
+        }
+      }),
     )
-    // stocke juste la première image (URL string) ou null
-    const firstImage = imagesUrls.length > 0 ? imagesUrls[0] : null
-    imagesParArtiste.value[artisteId] = firstImage
-    return firstImage
-  } catch (error) {
-    console.error('Erreur ImagesArtiste:', error)
-    imagesParArtiste.value[artisteId] = null
-    throw error
   }
-}
 
-async function chargerImagesPourTousLesArtistes(artistesListe) {
-  await Promise.all(
-    artistesListe.map(async (artiste) => {
-      try {
-        await ImagesArtiste(artiste.id)
-      } catch {
-        imagesParArtiste.value[artiste.id] = null
-      }
-    })
-  )
-}
-
-  return { artistes, artisteSelectionne, Artistes, Artiste, ChargementArtistes , ImagesArtiste ,chargerImagesPourTousLesArtistes , imagesParArtiste  }
+  return {
+    artistes,
+    artisteSelectionne,
+    RecupererArtistes,
+    Artiste,
+    ChargementArtistes,
+    ImagesArtiste,
+    chargerImagesPourTousLesArtistes,
+    imagesParArtiste,
+  }
 })

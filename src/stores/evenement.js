@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import api from '@/api/axio.js'
 
 export const useEvenementStore = defineStore('evenement', () => {
@@ -7,7 +7,6 @@ export const useEvenementStore = defineStore('evenement', () => {
   const imagesParEvenement = ref({})
   const ChargementEvenements = ref(false)
   const lieuxParEvenement = ref({})
-
 
   // Charger les événements depuis l’API
   async function RecupererEvenements() {
@@ -61,11 +60,11 @@ export const useEvenementStore = defineStore('evenement', () => {
       const res = await api().get(`images`, {
         params: {
           evenement: `/api/evenements/${evenementId}`,
-          'exists[evenements]': true
-        }
+          'exists[evenements]': true,
+        },
       })
       const imagesUrls = res.data.member.map(
-        (img) => `http://127.0.0.1:8000/images/dub/${img.fichier}`
+        (img) => `http://127.0.0.1:8000/images/dub/${img.fichier}`,
       )
       imagesParEvenement.value[evenementId] = imagesUrls
       return imagesUrls
@@ -82,20 +81,14 @@ export const useEvenementStore = defineStore('evenement', () => {
           await ImagesEvenement(evenement.id)
         } catch (error) {
           imagesParEvenement.value[evenement.id] = null
-          console.error(`Erreur lors du chargement des images pour l'événement ${evenement.id} :`, error)
+          console.error(
+            `Erreur lors du chargement des images pour l'événement ${evenement.id} :`,
+            error,
+          )
         }
-      })
+      }),
     )
   }
-
-  // Calcul de l’événement prochain
-  const evenementProchain = computed(() => {
-    const maintenant = new Date()
-    return [...evenements.value]
-      .filter(e => new Date(e.dateEvenement) > maintenant)
-      .sort((a, b) => new Date(a.dateEvenement) - new Date(b.dateEvenement))[0] || null
-  })
-
   return {
     evenements,
     imagesParEvenement,
@@ -105,7 +98,6 @@ export const useEvenementStore = defineStore('evenement', () => {
     RecupererLieu,
     AjouterEvenement,
     ImagesEvenement,
-    evenementProchain,
     chargerImagesPourTousLesEvenements,
   }
 })
