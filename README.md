@@ -1,74 +1,59 @@
-# Dub — Application Web de la Scène Musicale Dub  
+# Scoop Dub — Plateforme Web Dub
 
-Dub est une application web dédiée à la scène musicale Dub. Elle permet de consulter les événements, de découvrir les artistes, leurs styles musicaux, et d’obtenir des informations sur les lieux.
+Scoop Dub est une application web dédiée au Dub. Elle permet de consulter les événements ainsi que de découvrir les artistes, leurs styles musicaux et d’obtenir des informations sur les lieux.  
+Le projet repose sur une architecture Symfony (API) pour le backend et Vue.js pour le frontend.
 
 ---
 
-## Fonctionnalités  
+## Fonctionnalités
 
-### Backend — Symfony  
-- API RESTful générée avec **API Platform**.
+### Backend — Symfony (API)
+
+- API RESTful générée avec API Platform.
 - Entités principales :
   - `Evenement` : titre, description, date, heure, image principale, lieu.
   - `Artiste` : nom, description, style, lié à plusieurs événements.
   - `Image` : nom, fichier (chemin), type (`affiche`, `profil`), lié à un événement.
   - `Lieu` : nom, adresse, ville, événements associés.
-- Relations bien définies entre les entités.
-- Gestion des fichiers image pour les affiches et profils.
+- Relations entre entités définies avec Doctrine.
+- Gestion des fichiers (upload d’images pour affiches et profils).
+- Affichage des dates au format français.
+
+### Frontend — Vue.js (Interface Utilisateur)
+
+- Affichage dynamique des événements et artistes.
+- Intégration avec l'API Symfony.
+- Utilisation de :
+  - Vue Router pour la navigation
+  - Pinia pour la gestion d'état
+  - Axios pour les requêtes HTTP
 
 ---
 
-## Éco-Conception  
+## Éco-Conception
 
-- **Audit RGAA** : conformité avec les règles d’accessibilité web.
-- **Audit RGESN** : démarche de sobriété numérique pour limiter l’empreinte écologique.
+- Audit RGAA : conformité avec les règles d’accessibilité web.
+- Audit RGESN : respect des bonnes pratiques de sobriété numérique pour limiter l’empreinte écologique.
 
 ---
 
-## Installation  
+## Installation du Projet
 
-### Prérequis  
-- PHP >= 8.2  
+### Prérequis
+
+- PHP ≥ 8.2  
 - Composer  
 - Symfony CLI  
 - MySQL / MariaDB  
+- Node.js ≥ 18  
+- npm ou yarn
 
 ---
 
-### Backend — Symfony  
+### Backend — Symfony
 
-**Cloner le projet :**  
+Cloner le projet :
+
 ```bash
-git clone https://github.com/dadal560/Dub.git
-cd Dub
-```
-
-**Installer les dépendances PHP :**  
-```bash
-composer install
-```
-
-**Créer le fichier de configuration `.env.local` :**  
-```bash
-cp .env .env.local
-```
-
-Modifier le fichier `.env.local` pour configurer la base de données :  
-```
-DATABASE_URL="mysql://user:password@127.0.0.1:3306/dub_db"
-```
- **Créer la base de données :**  
-```bash
-php bin/console doctrine:database:create
-```
-
- **Exécuter les migrations :**  
-```bash
-php bin/console doctrine:migrations:migrate
-```
-
- **Lancer le serveur Symfony :**  
-```bash
-symfony server:start
-```
-
+git clone https://github.com/dadal560/scoop-dub-symfony-vue.git
+cd scoop-dub-symfony-vue/service
