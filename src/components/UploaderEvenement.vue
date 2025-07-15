@@ -164,6 +164,7 @@ async function soumettreEvenement() {
   padding: 2rem;
   border-radius: 1rem;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: #f9fafb;
 }
 
 input[type='text'],

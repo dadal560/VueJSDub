@@ -108,7 +108,7 @@
     </div>
   </section>
 
-  <section>
+  <section class="uploader-evenement">
     <UploaderEvenement />
   </section>
 </template>
@@ -339,6 +339,10 @@ function extraireId(iri) {
 .bloc-evenements__lien-artistes:focus {
   background-color: #005921;
   outline: none;
+}
+
+.uploader-evenement {
+  background-color: #f9fafb;
 }
 
 @keyframes pulse {

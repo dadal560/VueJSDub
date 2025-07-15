@@ -90,7 +90,7 @@
     </div>
   </section>
 
-  <section>
+  <section class="uploader-artiste" role="region" aria-label="Uploader un nouvel artiste">
     <UploaderArtiste />
   </section>
 </template>
@@ -147,7 +147,7 @@ const artistesFiltres = computed(() => {
   flex-direction: column;
   align-items: center;
   padding: 2rem 1rem;
-  background-color: #f9fafb; /* même fond clair que CarteEvenement */
+  background-color: #f9fafb;
   color: #222;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   width: 100%;
@@ -277,6 +277,9 @@ const artistesFiltres = computed(() => {
   text-overflow: ellipsis;
 }
 
+.uploader-artiste {
+  background-color: #f9fafb; /* même fond clair que CarteEvenement */
+}
 @keyframes pulse {
   0%,
   100% {
