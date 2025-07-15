@@ -20,6 +20,20 @@ export const useEvenementStore = defineStore('evenement', () => {
       ChargementEvenements.value = false
     }
   }
+  async function EvenementParId(id) {
+    const evenement = evenements.value.find((e) => e.id === id)
+    if (evenement) {
+      return evenement
+    }
+    try {
+      const { data } = await api().get(`evenements/${id}`)
+      evenements.value.push(data)
+      return data
+    } catch (error) {
+      console.error(`Erreur lors de la récupération de l'événement ${id} :`, error)
+      throw error
+    }
+  }
   async function RecupererLieu(lieuUrl) {
     // Extraire l'id du lieu de l'URL si besoin (ex: "/api/lieux/10" => 10)
     const lieuId = lieuUrl.split('/').pop()
@@ -99,5 +113,6 @@ export const useEvenementStore = defineStore('evenement', () => {
     AjouterEvenement,
     ImagesEvenement,
     chargerImagesPourTousLesEvenements,
+    EvenementParId,
   }
 })

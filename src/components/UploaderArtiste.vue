@@ -1,29 +1,24 @@
 <template>
-  <section class="formulaire-artiste">
-    <h2>Ajouter un artiste</h2>
-
+  <section class="formulaire-artiste" role="form" aria-labelledby="titre-formulaire-artiste">
+    <h2 id="titre-formulaire-artiste">Ajouter un artiste</h2>
     <form @submit.prevent="soumettreArtiste" enctype="multipart/form-data">
-      <!-- Données de l'artiste -->
-      <label for="nom">Nom</label>
+      <label for="nom">Nom :</label>
       <input type="text" id="nom" v-model="artiste.nom" required />
-
-      <label for="biographie">Biographie</label>
+      <label for="biographie">Biographie :</label>
       <textarea id="biographie" v-model="artiste.biographie"></textarea>
-
-      <!-- Image -->
       <h3>Image de l’artiste</h3>
       <label for="image-nom">Nom de l'image :</label>
       <input type="text" id="image-nom" v-model="image.nom" required />
-
       <label for="image-type">Type :</label>
       <input type="text" id="image-type" v-model="image.type" />
-
       <label for="imageFile">Fichier image :</label>
       <input type="file" id="imageFile" @change="chargerImage" accept="image/*" required />
-
-      <button type="submit" :disabled="chargement">Soumettre</button>
-
-      <p v-if="message" :class="{ 'message-success': !erreur, 'message-error': erreur }">
+      <button type="submit" :disabled="chargement" aria-disabled="chargement">Soumettre</button>
+      <p
+        v-if="message"
+        role="alert"
+        :class="{ 'message-success': !erreur, 'message-error': erreur }"
+      >
         {{ message }}
       </p>
     </form>
@@ -106,7 +101,6 @@ async function soumettreArtiste() {
   max-width: 450px;
   margin: 2rem auto;
   padding: 2rem;
-  background: white;
   border-radius: 1rem;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -125,15 +119,18 @@ textarea {
 
 button {
   padding: 0.6rem;
-  background-color: #ffd700;
+  background-color: #ff6a00;
   color: black;
   border: none;
   border-radius: 0.5rem;
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  display: block;
+  margin: 1rem auto;
+  width: fit-content;
+  text-align: center;
 }
-
 button:disabled {
   background-color: #bbb;
   cursor: not-allowed;

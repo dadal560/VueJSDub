@@ -1,50 +1,47 @@
 <template>
-  <section class="formulaire-evenement">
-    <h2>Ajouter un événement</h2>
-
+  <section class="formulaire-evenement" role="form" aria-labelledby="titre-formulaire-evenement">
+    <h2 id="titre-formulaire-evenement">Ajouter un événement</h2>
     <form @submit.prevent="soumettreEvenement" enctype="multipart/form-data">
-      <!-- Données de l'événement -->
-      <label for="titre">Titre</label>
+      <label for="titre">Titre :</label>
       <input type="text" id="titre" v-model="evenement.titre" required />
 
-      <label for="description">Description</label>
+      <label for="description">Description :</label>
       <textarea id="description" v-model="evenement.description" required></textarea>
 
-      <label for="date">Date</label>
+      <label for="date">Date :</label>
       <input type="datetime-local" id="date" v-model="evenement.dateEvenement" required />
 
-      <!-- Lieu -->
-      <h3>Lieu</h3>
-      <label for="lieu-nom">Nom du lieu</label>
-      <input type="text" id="lieu-nom" v-model="lieu.nom" required />
-
-      <label for="lieu-adresse">Adresse du lieu</label>
-      <input type="text" id="lieu-adresse" v-model="lieu.adresse" required />
-
-      <!-- Artistes -->
       <fieldset>
-        <legend>Artistes associés :</legend>
-        <p v-if="artisteStore.ChargementArtistes">Chargement des artistes...</p>
+        <legend>Lieu</legend>
+        <label for="lieu-nom">Nom du lieu :</label>
+        <input type="text" id="lieu-nom" v-model="lieu.nom" required />
+        <label for="lieu-adresse">Adresse du lieu :</label>
+        <input type="text" id="lieu-adresse" v-model="lieu.adresse" required />
+      </fieldset>
+
+      <fieldset>
+        <legend>Artistes associés</legend>
+        <p v-if="artisteStore.ChargementArtistes" role="status" aria-live="polite">
+          Chargement des artistes...
+        </p>
         <label v-for="artiste in artistes" :key="artiste.id" class="checkbox-artiste">
           <input type="checkbox" :value="artiste.id" v-model="artistesSelectionnes" />
           {{ artiste.nom }}
         </label>
       </fieldset>
 
-      <!-- Image -->
-      <h3>Image de l’événement</h3>
-      <label for="image-nom">Nom de l'image :</label>
-      <input type="text" id="image-nom" v-model="image.nom" required />
+      <fieldset>
+        <legend>Image de l’événement</legend>
+        <label for="image-nom">Nom de l'image :</label>
+        <input type="text" id="image-nom" v-model="image.nom" required />
+        <label for="image-type">Type :</label>
+        <input type="text" id="image-type" v-model="image.type" />
+        <label for="imageFile">Fichier image :</label>
+        <input type="file" id="imageFile" @change="chargerImage" accept="image/*" required />
+      </fieldset>
 
-      <label for="image-type">Type :</label>
-      <input type="text" id="image-type" v-model="image.type" />
-
-      <label for="imageFile">Fichier image :</label>
-      <input type="file" id="imageFile" @change="chargerImage" accept="image/*" required />
-
-      <button type="submit" :disabled="chargement">Soumettre</button>
-
-      <p v-if="message" class="message">{{ message }}</p>
+      <button type="submit" :disabled="chargement" aria-disabled="chargement">Soumettre</button>
+      <p v-if="message" role="alert" class="message">{{ message }}</p>
     </form>
   </section>
 </template>
@@ -86,7 +83,7 @@ onMounted(async () => {
     await artisteStore.RecupererArtistes()
     artistes.value = artisteStore.artistes
   } catch (error) {
-    console.error('Erreur lors de la récupération des artistes :', error)
+    console.error('Erreur lors du chargement des artistes :', error)
     message.value = 'Erreur lors du chargement des artistes.'
   }
 })
@@ -100,12 +97,10 @@ async function soumettreEvenement() {
     message.value = 'Veuillez sélectionner un fichier image.'
     return
   }
-
   chargement.value = true
   message.value = ''
 
   try {
-    // 1 - Création de l'événement avec artistes associés
     const reponseEvenement = await api().post(
       '/evenements',
       {
@@ -117,7 +112,6 @@ async function soumettreEvenement() {
     const evenementId = reponseEvenement.data.id
     const evenementIri = `/api/evenements/${evenementId}`
 
-    // 2 - Création du lieu et liaison à l'événement
     const reponseLieu = await api().post(
       '/lieus',
       {
@@ -129,14 +123,12 @@ async function soumettreEvenement() {
     )
     const lieuIri = `/api/lieus/${reponseLieu.data.id}`
 
-    // 3 - Mise à jour de l'événement avec le lieu
     await api().patch(
       `/evenements/${evenementId}`,
       { lieu: lieuIri },
       { headers: { 'Content-Type': 'application/merge-patch+json' } },
     )
 
-    // 4 - Upload de l'image liée à l'événement
     const formData = new FormData()
     formData.append('nom', image.value.nom)
     formData.append('type', image.value.type)
@@ -144,21 +136,17 @@ async function soumettreEvenement() {
     formData.append('evenement', evenementIri)
 
     await api().post('/images', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      headers: { 'Content-Type': 'multipart/form-data' },
     })
 
     message.value = 'Événement créé avec succès !'
-    // Reset du formulaire (optionnel)
     evenement.value = { titre: '', description: '', dateEvenement: '' }
     lieu.value = { nom: '', adresse: '' }
     artistesSelectionnes.value = []
     image.value = { nom: '', type: '', fichier: null }
-    // Redirection après un délai
     setTimeout(() => router.push('/'), 1500)
   } catch (e) {
-    console.error('Erreur lors de la création :', e)
+    console.error('Erreur lors de la création de l’événement :', e)
     message.value = 'Erreur lors de la création de l’événement.'
   } finally {
     chargement.value = false
@@ -173,7 +161,6 @@ async function soumettreEvenement() {
   gap: 1rem;
   max-width: 450px;
   margin: 0 auto;
-  background: white;
   padding: 2rem;
   border-radius: 1rem;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -191,13 +178,17 @@ textarea {
 
 button {
   padding: 0.6rem;
-  background-color: #ffd700;
+  background-color: #ff6a00;
   color: black;
   border: none;
   border-radius: 0.5rem;
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  display: block;
+  margin: 1rem auto;
+  width: fit-content;
+  text-align: center;
 }
 
 button:disabled {
